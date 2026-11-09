@@ -6,7 +6,6 @@
     <title>AREL OSGB - Laboratuvar Fiyatlandırma Listesi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- html2canvas kütüphanesi (Paneli doğrudan resim olarak kopyalamak için) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @media print {
@@ -102,15 +101,20 @@
                         <div id="totalPrice" class="text-4xl font-extrabold text-emerald-700 mt-1">0,00 ₺</div>
                         <div id="selectedCount" class="text-xs text-emerald-600 font-medium mt-1">Henüz tetkik seçilmedi</div>
                         
-                        <!-- İstenen Adres ve İletişim Bilgileri (Fiyatın Hemen Altı) -->
-                        <div class="mt-4 pt-4 border-t border-emerald-200/60 text-[11px] text-slate-600 space-y-1 font-medium text-left bg-white/60 p-3 rounded-lg border">
-                            <div class="flex items-start gap-1.5">
-                                <i class="fa-solid fa-location-dot text-emerald-600 mt-0.5 shrink-0"></i>
-                                <span>BÜYÜKDERE CAD. NO: 60 D: 8 HANIM KADIN İŞ MERKEZİ MECİDİYEKÖY / İSTANBUL</span>
+                        <!-- Laboratuvar Adresimiz Bölümü -->
+                        <div class="mt-4 pt-3 border-t border-emerald-200/60 text-left">
+                            <div class="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                                <i class="fa-solid fa-building text-emerald-600"></i> LABORATUVAR ADRESİMİZ
                             </div>
-                            <div class="flex items-center gap-4 pt-1">
-                                <div><i class="fa-solid fa-phone text-emerald-600 mr-1"></i> Tel: 0212 212 50 60</div>
-                                <div><i class="fa-solid fa-mobile-screen text-emerald-600 mr-1"></i> GSM: 0532 560 21 23</div>
+                            <div class="bg-white/80 p-3 rounded-lg border border-emerald-200/80 text-[11px] text-slate-700 space-y-1 font-medium">
+                                <div class="flex items-start gap-1.5">
+                                    <i class="fa-solid fa-location-dot text-emerald-600 mt-0.5 shrink-0"></i>
+                                    <span>BÜYÜKDERE CAD. NO: 60 D: 8 HANIM KADIN İŞ MERKEZİ MECİDİYEKÖY / İSTANBUL</span>
+                                </div>
+                                <div class="flex items-center gap-4 pt-1 border-t border-slate-100 mt-1">
+                                    <div><i class="fa-solid fa-phone text-emerald-600 mr-1"></i> Tel: 0212 212 50 60</div>
+                                    <div><i class="fa-solid fa-mobile-screen text-emerald-600 mr-1"></i> GSM: 0532 560 21 23</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -129,14 +133,11 @@
                         </div>
                     </div>
 
-                    <!-- Kurumsal Alt Not & Bilgi -->
-                    <div class="bg-slate-50 p-4 border-t border-slate-200 text-xs text-slate-500 space-y-1">
+                    <!-- Kurumsal Alt Bilgi (İnce yazı kaldırıldı, sadece onay işareti kaldı) -->
+                    <div class="bg-slate-50 p-4 border-t border-slate-200 text-xs text-slate-500">
                         <div class="flex items-center gap-1.5 font-semibold text-slate-700">
                             <i class="fa-solid fa-circle-check text-emerald-600"></i> AREL OSGB Laboratuvar Tarifesidir.
                         </div>
-                        <p class="text-[11px] leading-relaxed text-slate-400">
-                            * Butona basarak panoyu kopyalayıp WhatsApp sohbetine doğrudan yapıştırabilirsiniz.
-                        </p>
                     </div>
 
                 </div>
@@ -305,27 +306,6 @@
             selectedTests.forEach((test, idx) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'flex justify-between items-center py-2 text-slate-700 text-xs font-medium';
-                
-                itemDiv.innerHTML = `
-                    <div class="flex items-center gap-2 pr-2">
-                        <span class="text-slate-400 font-mono text-[11px]">${idx + 1}.</span>
-                        <span class="text-slate-900 font-semibold">${test.name}</span>
-                    </div>
-                    <div class="text-emerald-600 font-bold whitespace-nowrap"><i class="fa-solid fa-check"></i> Eklendi</div>
-                `;
-                selectedListEl.innerHTML = `
-                    <div class="text-center py-8 text-slate-400 text-xs italic">
-                        Sol taraftaki listeden tetkik seçtiğinizde detaylar burada görüntülenecektir.
-                    </div>
-                `;
-                selectedListEl.appendChild(itemDiv);
-            });
-
-            // Üstteki blok içindeki döngü hatasını düzeltmek için güncellenmiş temiz liste oluşturma:
-            selectedListEl.innerHTML = '';
-            selectedTests.forEach((test, idx) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'flex justify-between items-center py-2 text-slate-700 text-xs font-medium';
                 itemDiv.innerHTML = `
                     <div class="flex items-center gap-2 pr-2">
                         <span class="text-slate-400 font-mono text-[11px]">${idx + 1}.</span>
@@ -337,12 +317,11 @@
             });
         }
 
-        // Panoyu Doğrudan Resim Olarak Kopyalama Fonksiyonu
+        // Panoyu Uyarı Mesajı Olmadan Doğrudan Resim Olarak Kopyalama Fonksiyonu
         function copyCardAsImage() {
             const card = document.getElementById('summaryCard');
             const btn = document.getElementById('copyImageBtn');
             
-            // Butonu geçici olarak gizle ki resimde çıkmasın
             btn.style.display = 'none';
 
             html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
@@ -351,9 +330,8 @@
                         navigator.clipboard.write([
                             new ClipboardItem({ 'image/png': blob })
                         ]).then(() => {
-                            alert("Teklif panosu resim olarak panoya kopyalandı! WhatsApp'a girip doğrudan 'Yapıştır' diyebilirsiniz.");
+                            // Uyarı penceresi (alert) kaldırıldı, sessizce kopyalanır.
                         }).catch(err => {
-                            // Desteklemeyen tarayıcılar için alternatif indirme
                             downloadCanvasAsImage(canvas);
                         });
                     } catch (e) {
@@ -369,7 +347,6 @@
             link.download = 'AREL_OSGB_Teklif_Ozeti.png';
             link.href = canvas.toDataURL('image/png');
             link.click();
-            alert("Tarayıcınız panoya doğrudan kopyalamayı desteklemediği için görsel cihazınıza indirildi.");
         }
 
         searchInput.addEventListener('input', (e) => {
