@@ -12,9 +12,19 @@
             .no-print { display: none !important; }
             .print-full-width { width: 100% !important; }
         }
+        #toastMessage {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8 font-sans">
+<body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8 font-sans relative">
+
+    <!-- Geçici Kopyalandı Balonu (Toast) -->
+    <div id="toastMessage" class="fixed top-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-2.5 text-sm font-semibold opacity-0 pointer-events-none transform -translate-y-4">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span>Görsel ve konum/adres bilgileri kopyalandı! WhatsApp'a yapıştırabilirsiniz.</span>
+    </div>
+
     <div class="max-w-7xl mx-auto space-y-6">
         
         <!-- Üst Kurumsal Başlık -->
@@ -133,7 +143,7 @@
                         </div>
                     </div>
 
-                    <!-- Kurumsal Alt Bilgi (İnce yazı kaldırıldı, sadece onay işareti kaldı) -->
+                    <!-- Kurumsal Alt Bilgi -->
                     <div class="bg-slate-50 p-4 border-t border-slate-200 text-xs text-slate-500">
                         <div class="flex items-center gap-1.5 font-semibold text-slate-700">
                             <i class="fa-solid fa-circle-check text-emerald-600"></i> AREL OSGB Laboratuvar Tarifesidir.
@@ -317,7 +327,7 @@
             });
         }
 
-        // Panoyu Uyarı Mesajı Olmadan Doğrudan Resim Olarak Kopyalama Fonksiyonu
+        // Resim + Yazı/Konum Bilgisini Aynı Anda Kopyalama Fonksiyonu
         function copyCardAsImage() {
             const card = document.getElementById('summaryCard');
             const btn = document.getElementById('copyImageBtn');
@@ -327,12 +337,21 @@
             html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
                 canvas.toBlob(blob => {
                     try {
+                        // Hem resmi hem de tıklanabilir adres/konum metnini panoya veriyoruz
+                        const textInfo = "📍 AREL OSGB Laboratuvar Adresi:\nBüyükdere Cad. No: 60 D: 8 Hanım Kadın İş Merkezi Mecidiyeköy/İSTANBUL\n📞 Tel: 0212 212 50 60 | GSM: 0532 560 21 23\n🗺️ Google Haritalar Konum: https://maps.app.goo.gl/ornekKonum";
+                        
                         navigator.clipboard.write([
-                            new ClipboardItem({ 'image/png': blob })
+                            new ClipboardItem({ 
+                                'image/png': blob,
+                                'text/plain': new Blob([textInfo], { type: 'text/plain' })
+                            })
                         ]).then(() => {
-                            // Uyarı penceresi (alert) kaldırıldı, sessizce kopyalanır.
+                            showToast();
                         }).catch(err => {
+                            // Alternatif tarayıcı desteği
+                            navigator.clipboard.writeText(textInfo);
                             downloadCanvasAsImage(canvas);
+                            showToast();
                         });
                     } catch (e) {
                         downloadCanvasAsImage(canvas);
@@ -340,6 +359,17 @@
                     btn.style.display = 'flex';
                 });
             });
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toastMessage');
+            toast.style.opacity = '1';
+            toast.style.transform = 'translate(-50%, 0)';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, -16px)';
+            }, 2500);
         }
 
         function downloadCanvasAsImage(canvas) {
