@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AREL OSGB - Laboratuvar Fiyatlandırma Listesi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-full-width { width: 100% !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8 font-sans">
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Üst Kurumsal Başlık -->
+        <div class="bg-slate-900 text-white rounded-xl shadow-md p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center text-xl font-bold text-white shadow-inner">
+                    <i class="fa-solid fa-flask"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white">AREL OSGB</h1>
+                    <p class="text-slate-400 text-xs md:text-sm font-medium">Laboratuvar Fiyatlandırma Listesi & Teklif Hesaplama Paneli</p>
+                </div>
+            </div>
+            <div class="text-xs text-slate-400 bg-slate-800/80 px-4 py-2 rounded-lg border border-slate-700">
+                <div class="font-semibold text-slate-200">Teklif Özeti Hazırlama Paneli</div>
+                <div>Seçilen tetkikler ve toplam bedel sağ panoda anlık listelenir.</div>
+            </div>
+        </div>
+
+        <!-- Ana Düzen: Sol (Tetkik Listesi) - Sağ (Fiyat & Özet Teklif Kartı) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- SOL TARAF: Tetkik Listesi ve Arama -->
+            <div class="lg:col-span-7 space-y-4">
+                
+                <!-- Arama ve Kontroller -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col sm:flex-row gap-3 justify-between items-center no-print">
+                    <div class="relative w-full sm:w-80">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="searchInput" placeholder="Tetkik adı veya no girin..." 
+                               class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition text-sm">
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button id="selectAllBtn" class="px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+                            Tümünü Seç
+                        </button>
+                        <button id="clearAllBtn" class="px-3 py-2 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition">
+                            Temizle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tablo Konteyneri -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto max-h-[680px] overflow-y-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 sticky top-0 border-b border-slate-200 text-slate-600 text-xs font-bold uppercase z-10">
+                                <tr>
+                                    <th class="p-3.5 w-12 text-center">Seç</th>
+                                    <th class="p-3.5 w-14">No</th>
+                                    <th class="p-3.5">Tetkik Adı</th>
+                                    <th class="p-3.5 text-right w-36">Birim Fiyat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="testTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- JS ile veri eklenecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAĞ TARAF: Kurumsal Özet ve Fiyat Kartı -->
+            <div class="lg:col-span-5 sticky top-6">
+                <div id="summaryCard" class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                    
+                    <!-- Kart Üst Başlık -->
+                    <div class="bg-slate-900 text-white p-5 border-b border-slate-800 flex justify-between items-center">
+                        <div>
+                            <div class="text-xs font-semibold text-emerald-400 tracking-wider uppercase">Fiyat Teklif Özeti</div>
+                            <h2 class="text-lg font-bold text-white mt-0.5">Seçilen Laboratuvar Tetkikleri</h2>
+                        </div>
+                        <i class="fa-solid fa-receipt text-2xl text-slate-500"></i>
+                    </div>
+
+                    <!-- Fiyat Alanı -->
+                    <div class="bg-emerald-50/70 p-6 border-b border-emerald-100 text-center">
+                        <span class="text-xs uppercase font-bold text-emerald-800 tracking-wider">TOPLAM BEDEL</span>
+                        <div id="totalPrice" class="text-4xl font-extrabold text-emerald-700 mt-1">0,00 ₺</div>
+                        <div id="selectedCount" class="text-xs text-emerald-600 font-medium mt-1">Henüz tetkik seçilmedi</div>
+                    </div>
+
+                    <!-- Seçilen Tetkikler Listesi (Fiyatlar gizlendi, sadece adlar listeleniyor) -->
+                    <div class="p-5 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Seçilen Hizmet / Tetkik Kalemleri</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Durum</span>
+                        </div>
+
+                        <div id="selectedList" class="max-h-[380px] overflow-y-auto space-y-2 pr-1 text-sm divide-y divide-slate-100">
+                            <div class="text-center py-8 text-slate-400 text-xs italic">
+                                Sol taraftaki listeden tetkik seçtiğinizde detaylar burada görüntülenecektir.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kurumsal Alt Not & Bilgi -->
+                    <div class="bg-slate-50 p-4 border-t border-slate-200 text-xs text-slate-500 space-y-1">
+                        <div class="flex items-center gap-1.5 font-semibold text-slate-700">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i> AREL OSGB Laboratuvar Tarifesidir.
+                        </div>
+                        <p class="text-[11px] leading-relaxed text-slate-400">
+                            * Ekran görüntüsü alarak müşterilerinize resmi hizmet detayı ve toplam bedel bildirimi olarak iletebilirsiniz.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const testList = [
+            { id: 1, name: "Akciğer Grafisi", price: 200 },
+            { id: 2, name: "Pnömokonyoz Çift Okuyucu", price: 400 },
+            { id: 3, name: "Odiometri (İşitme Testi)", price: 200 },
+            { id: 4, name: "Solunum Fonksiyon Testi (SFT)", price: 200 },
+            { id: 5, name: "Tam Kan Sayımı / Hemogram", price: 200 },
+            { id: 6, name: "Kan Grubu Kartı", price: 140 },
+            { id: 7, name: "Göz Ölçümü (İşyeri Hekimi Yorumlu)", price: 200 },
+            { id: 8, name: "Göz Ölçümü (Göz Uzmanı Yorumlu)", price: 600 },
+            { id: 9, name: "EKG", price: 200 },
+            { id: 10, name: "Açlık Kan Şekeri (AKS)", price: 150 },
+            { id: 11, name: "HBsAg (Kart Test)", price: 200 },
+            { id: 12, name: "Hepatit Virüsü Taraması", price: 200 },
+            { id: 13, name: "Anti HBs (Kart Test)", price: 200 },
+            { id: 14, name: "Anti HCV (Kart Test)", price: 200 },
+            { id: 15, name: "Anti HIV (Kart Test)", price: 500 },
+            { id: 16, name: "Anti Hav IgG / IgM (Kart Test)", price: 500 },
+            { id: 17, name: "Tetanoz Aşısı", price: 400 },
+            { id: 18, name: "HBsAg (Eliza)", price: 350 },
+            { id: 19, name: "Anti HBS (Eliza)", price: 350 },
+            { id: 20, name: "Anti HCV (Eliza)", price: 350 },
+            { id: 21, name: "Anti HIV (Eliza)", price: 350 },
+            { id: 22, name: "Anti Hav IgG (Eliza)", price: 1000 },
+            { id: 23, name: "Anti Hav IgM (Eliza)", price: 1000 },
+            { id: 24, name: "Ast (SGOT)", price: 120 },
+            { id: 25, name: "Alt (SGPT)", price: 120 },
+            { id: 26, name: "GGT", price: 120 },
+            { id: 27, name: "Üre / BUN", price: 120 },
+            { id: 28, name: "Kreatinin", price: 120 },
+            { id: 29, name: "Albumin", price: 120 },
+            { id: 30, name: "Aptt", price: 400 },
+            { id: 31, name: "HbA1c", price: 450 },
+            { id: 32, name: "Kanda Kurşun", price: 800 },
+            { id: 33, name: "Total Kolesterol", price: 210 },
+            { id: 34, name: "LDL Kolestrol", price: 210 },
+            { id: 35, name: "HDL Kolestrol", price: 260 },
+            { id: 36, name: "Trigliserit", price: 210 },
+            { id: 37, name: "Ürik Asit", price: 200 },
+            { id: 38, name: "Tam İdrar Tahlili (TİT)", price: 200 },
+            { id: 39, name: "Sedimantasyon", price: 250 },
+            { id: 40, name: "Alkalen Fosfataz (ALP)", price: 120 },
+            { id: 41, name: "CRP", price: 300 },
+            { id: 42, name: "Portör (Boğaz Kültürü)", price: 175 },
+            { id: 43, name: "Portör (Burun Kültürü)", price: 175 },
+            { id: 44, name: "Portör (Gaita Kültürü)", price: 175 },
+            { id: 45, name: "Portör (Gaita Mikroskopisi)", price: 175 },
+            { id: 46, name: "Gaitada Gizli Kan", price: 400 },
+            { id: 47, name: "Gaitada Parazit İncelemesi", price: 400 },
+            { id: 48, name: "T3", price: 420 },
+            { id: 49, name: "T4", price: 420 },
+            { id: 50, name: "TSH", price: 420 },
+            { id: 51, name: "VDRL (Sifiliz) (Kart Test)", price: 450 },
+            { id: 52, name: "VDRL (Sifiliz) (Eliza)", price: 900 },
+            { id: 53, name: "Sağlık Raporu (İşyeri Hekimi İmzalı)", price: 700 }
+        ];
+
+        let selectedIds = new Set();
+
+        const tableBody = document.getElementById('testTableBody');
+        const searchInput = document.getElementById('searchInput');
+        const totalPriceEl = document.getElementById('totalPrice');
+        const selectedCountEl = document.getElementById('selectedCount');
+        const selectedListEl = document.getElementById('selectedList');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+
+        function renderTable(filterText = '') {
+            tableBody.innerHTML = '';
+            
+            const filtered = testList.filter(item => 
+                item.name.toLowerCase().includes(filterText.toLowerCase()) ||
+                item.id.toString().includes(filterText)
+            );
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">Aradığınız tetkik bulunamadı.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const isChecked = selectedIds.has(item.id);
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-emerald-50/50 transition cursor-pointer ${isChecked ? 'bg-emerald-50/80 font-medium' : ''}`;
+                tr.onclick = (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        toggleSelect(item.id);
+                    }
+                };
+
+                tr.innerHTML = `
+                    <td class="p-3.5 text-center">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} 
+                               onchange="toggleSelect(${item.id})"
+                               class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 cursor-pointer">
+                    </td>
+                    <td class="p-3.5 text-slate-400 font-mono text-xs">${item.id}</td>
+                    <td class="p-3.5 text-slate-800">${item.name}</td>
+                    <td class="p-3.5 text-right font-semibold text-slate-900">${item.price.toFixed(2)} ₺</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function toggleSelect(id) {
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+            } else {
+                selectedIds.add(id);
+            }
+            updateSummary();
+            renderTable(searchInput.value);
+        }
+
+        function updateSummary() {
+            let selectedTests = [];
+            selectedIds.forEach(id => {
+                const test = testList.find(t => t.id === id);
+                if (test) selectedTests.push(test);
+            });
+
+            let total = 0;
+            let countSelected = selectedTests.length;
+
+            if (countSelected >= 1 && countSelected <= 3) {
+                let basePrice = 0;
+                if (countSelected === 1) basePrice = 400;
+                else if (countSelected === 2) basePrice = 700;
+                else if (countSelected === 3) basePrice = 950;
+
+                let extra = 0;
+                selectedTests.forEach(t => {
+                    if (t.price > 200) {
+                        extra += (t.price - 200);
+                    }
+                });
+                total = basePrice + extra;
+            } else {
+                selectedTests.forEach(t => {
+                    total += t.price;
+                });
+            }
+
+            totalPriceEl.textContent = total.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+            selectedCountEl.textContent = `${selectedIds.size} hizmet/tetkik seçildi`;
+
+            selectedListEl.innerHTML = '';
+
+            if (selectedTests.length === 0) {
+                selectedListEl.GitHub... yazmamak için içerik yer tutucu:
+                selectedListEl.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 text-xs italic">
+                        Sol taraftaki listeden tetkik seçtiğinizde detaylar burada görüntülenecektir.
+                    </div>
+                `;
+                return;
+            }
+
+            selectedTests.forEach((test, idx) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex justify-between items-center py-2 text-slate-700 text-xs font-medium';
+                
+                // Sağ taraftaki listede sadece numara ve tetkik adı gösteriliyor (Fiyatlar gizlendi)
+                itemDiv.innerHTML = `
+                    <div class="flex items-center gap-2 pr-2">
+                        <span class="text-slate-400 font-mono text-[11px]">${idx + 1}.</span>
+                        <span class="text-slate-900 font-semibold">${test.name}</span>
+                    </div>
+                    <div class="text-emerald-600 font-bold whitespace-nowrap"><i class="fa-solid fa-check"></i> Eklendi</div>
+                `;
+                selectedListEl.appendChild(itemDiv);
+            });
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            renderTable(e.target.value);
+        });
+
+        selectAllBtn.addEventListener('click', () => {
+            testList.forEach(item => selectedIds.add(item.id));
+            updateSummary();
+            renderTable(searchInput.value);
+        });
+
+        clearAllBtn.addEventListener('click', () => {
+            selectedIds.clear();
+            updateSummary();
+            renderTable(searchInput.value);
+        });
+
+        renderTable();
+    </script>
+</body>
+</html>
