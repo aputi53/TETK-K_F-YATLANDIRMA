@@ -55,7 +55,7 @@
                     <div class="relative w-full sm:w-80">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" id="searchInput" placeholder="Tetkik adı veya no girin..."
-                               class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition text-sm">
+                              class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition text-sm">
                     </div>
 
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -94,14 +94,14 @@
                 <!-- Görüntü Alınacak Alan (summaryCard) -->
                 <div id="summaryCard" class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
 
-                    <!-- Kart Üst Başlık & WhatsApp Butonu -->
+                    <!-- Kart Üst Başlık & Paylaş Butonu -->
                     <div class="bg-slate-900 text-white p-5 border-b border-slate-800 flex justify-between items-center gap-3">
                         <div>
                             <div class="text-xs font-semibold text-emerald-400 tracking-wider uppercase">Fiyat Teklif Özeti</div>
                             <h2 class="text-lg font-bold text-white mt-0.5">Seçilen Laboratuvar Tetkikleri</h2>
                         </div>
-                        <button id="copyImageBtn" onclick="copyCardAsImage()" title="Resim + adres bilgisini WhatsApp'a gönder" class="no-print bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow shrink-0">
-                            <i class="fa-brands fa-whatsapp text-base"></i> WhatsApp'a Kopyala
+                        <button id="copyImageBtn" onclick="copyCardAsImage()" title="Teklif özetini paylaş" class="no-print bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow shrink-0">
+                            <i class="fa-solid fa-share-nodes text-base"></i> Paylaş
                         </button>
                     </div>
 
@@ -213,9 +213,7 @@
             { id: 53, name: "Sağlık Raporu (İşyeri Hekimi İmzalı)", price: 700 }
         ];
 
-        // WhatsApp'ta resmin altına açıklama olarak gidecek metin.
-        // Telefon numaraları ve link WhatsApp'ta otomatik tıklanabilir olur.
-        // Harita linkini kendi Google Haritalar paylaşım linkinizle değiştirebilirsiniz.
+        // Paylaşım metni.
         const CONTACT_TEXT =
 `📍 AREL OSGB Laboratuvar
 Büyükdere Cad. No: 60 D: 8 Hanım Kadın İş Merkezi, Mecidiyeköy / İSTANBUL
@@ -337,9 +335,6 @@ Büyükdere Cad. No: 60 D: 8 Hanım Kadın İş Merkezi, Mecidiyeköy / İSTANBU
             });
         }
 
-        // TEK BUTON: Kartı resme çevirir.
-        // 1) Paylaşım menüsü destekleniyorsa resim + adres/telefon metni birlikte WhatsApp'a gider.
-        // 2) Desteklenmiyorsa resmi panoya kopyalar (olmazsa indirir).
         async function copyCardAsImage() {
             const card = document.getElementById('summaryCard');
             const btn = document.getElementById('copyImageBtn');
@@ -358,23 +353,21 @@ Büyükdere Cad. No: 60 D: 8 Hanım Kadın İş Merkezi, Mecidiyeköy / İSTANBU
 
             const file = new File([blob], 'AREL_OSGB_Teklif.png', { type: 'image/png' });
 
-            // 1) Paylaşım menüsü (mobil ve güncel masaüstü tarayıcılar, https gerekir)
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({ files: [file], text: CONTACT_TEXT });
                     return;
                 } catch (e) {
-                    if (e.name === 'AbortError') return; // kullanıcı vazgeçti
+                    if (e.name === 'AbortError') return;
                 }
             }
 
-            // 2) Yedek: resmi panoya kopyala
             try {
                 await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-                showToast("Resim kopyalandı. WhatsApp'a yapıştırabilirsiniz.");
+                showToast("Resim kopyalandı.");
             } catch (e) {
                 downloadBlob(blob);
-                showToast("Resim indirildi. WhatsApp'a ekleyebilirsiniz.");
+                showToast("Resim indirildi.");
             }
         }
 
