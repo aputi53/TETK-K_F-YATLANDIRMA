@@ -19,14 +19,14 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8 font-sans relative">
 
-    <!-- Geçici Kopyalandı Balonu (Toast) -->
+    <!-- Geçici Bilgi Balonu (Toast) -->
     <div id="toastMessage" class="fixed top-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-2.5 text-sm font-semibold opacity-0 pointer-events-none transform -translate-y-4">
         <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-        <span>Görsel ve konum/adres bilgileri kopyalandı! WhatsApp'a yapıştırabilirsiniz.</span>
+        <span>Hazır!</span>
     </div>
 
     <div class="max-w-7xl mx-auto space-y-6">
-        
+
         <!-- Üst Kurumsal Başlık -->
         <div class="bg-slate-900 text-white rounded-xl shadow-md p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex items-center gap-4">
@@ -46,15 +46,15 @@
 
         <!-- Ana Düzen: Sol (Tetkik Listesi) - Sağ (Fiyat & Özet Teklif Kartı) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
+
             <!-- SOL TARAF: Tetkik Listesi ve Arama -->
             <div class="lg:col-span-7 space-y-4">
-                
+
                 <!-- Arama ve Kontroller -->
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col sm:flex-row gap-3 justify-between items-center no-print">
                     <div class="relative w-full sm:w-80">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="searchInput" placeholder="Tetkik adı veya no girin..." 
+                        <input type="text" id="searchInput" placeholder="Tetkik adı veya no girin..."
                                class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition text-sm">
                     </div>
 
@@ -89,19 +89,19 @@
             </div>
 
             <!-- SAĞ TARAF: Kurumsal Özet ve Fiyat Kartı -->
-            <div class="lg:col-span-5 sticky top-6">
-                
+            <div class="lg:col-span-5 lg:sticky lg:top-6">
+
                 <!-- Görüntü Alınacak Alan (summaryCard) -->
                 <div id="summaryCard" class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
-                    
-                    <!-- Kart Üst Başlık & WhatsApp Kopyala Butonu -->
-                    <div class="bg-slate-900 text-white p-5 border-b border-slate-800 flex justify-between items-center">
+
+                    <!-- Kart Üst Başlık & WhatsApp Butonu -->
+                    <div class="bg-slate-900 text-white p-5 border-b border-slate-800 flex justify-between items-center gap-3">
                         <div>
                             <div class="text-xs font-semibold text-emerald-400 tracking-wider uppercase">Fiyat Teklif Özeti</div>
                             <h2 class="text-lg font-bold text-white mt-0.5">Seçilen Laboratuvar Tetkikleri</h2>
                         </div>
-                        <button id="copyImageBtn" onclick="copyCardAsImage()" title="Panoyu Resim Olarak Kopyala" class="no-print bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow">
-                            <i class="fa-solid fa-camera"></i> WhatsApp'a Kopyala
+                        <button id="copyImageBtn" onclick="copyCardAsImage()" title="Resim + adres bilgisini WhatsApp'a gönder" class="no-print bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow shrink-0">
+                            <i class="fa-brands fa-whatsapp text-base"></i> WhatsApp'a Kopyala
                         </button>
                     </div>
 
@@ -110,7 +110,7 @@
                         <span class="text-xs uppercase font-bold text-emerald-800 tracking-wider">TOPLAM BEDEL</span>
                         <div id="totalPrice" class="text-4xl font-extrabold text-emerald-700 mt-1">0,00 ₺</div>
                         <div id="selectedCount" class="text-xs text-emerald-600 font-medium mt-1">Henüz tetkik seçilmedi</div>
-                        
+
                         <!-- Laboratuvar Adresimiz Bölümü -->
                         <div class="mt-4 pt-3 border-t border-emerald-200/60 text-left">
                             <div class="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
@@ -213,6 +213,16 @@
             { id: 53, name: "Sağlık Raporu (İşyeri Hekimi İmzalı)", price: 700 }
         ];
 
+        // WhatsApp'ta resmin altına açıklama olarak gidecek metin.
+        // Telefon numaraları ve link WhatsApp'ta otomatik tıklanabilir olur.
+        // Harita linkini kendi Google Haritalar paylaşım linkinizle değiştirebilirsiniz.
+        const CONTACT_TEXT =
+`📍 AREL OSGB Laboratuvar
+Büyükdere Cad. No: 60 D: 8 Hanım Kadın İş Merkezi, Mecidiyeköy / İSTANBUL
+📞 +90 212 212 50 60
+📱 +90 532 560 21 23
+🗺️ Konum: https://maps.google.com/?q=Büyükdere+Cad.+No+60+Mecidiyeköy+İstanbul`;
+
         let selectedIds = new Set();
 
         const tableBody = document.getElementById('testTableBody');
@@ -225,8 +235,8 @@
 
         function renderTable(filterText = '') {
             tableBody.innerHTML = '';
-            
-            const filtered = testList.filter(item => 
+
+            const filtered = testList.filter(item =>
                 item.name.toLowerCase().includes(filterText.toLowerCase()) ||
                 item.id.toString().includes(filterText)
             );
@@ -248,7 +258,7 @@
 
                 tr.innerHTML = `
                     <td class="p-3.5 text-center">
-                        <input type="checkbox" ${isChecked ? 'checked' : ''} 
+                        <input type="checkbox" ${isChecked ? 'checked' : ''}
                                onchange="toggleSelect(${item.id})"
                                class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 cursor-pointer">
                     </td>
@@ -327,56 +337,65 @@
             });
         }
 
-        // Resim + Yazı/Konum Bilgisini Aynı Anda Kopyalama Fonksiyonu
-        function copyCardAsImage() {
+        // TEK BUTON: Kartı resme çevirir.
+        // 1) Paylaşım menüsü destekleniyorsa resim + adres/telefon metni birlikte WhatsApp'a gider.
+        // 2) Desteklenmiyorsa resmi panoya kopyalar (olmazsa indirir).
+        async function copyCardAsImage() {
             const card = document.getElementById('summaryCard');
             const btn = document.getElementById('copyImageBtn');
-            
-            btn.style.display = 'none';
 
-            html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
-                canvas.toBlob(blob => {
-                    try {
-                        // Hem resmi hem de tıklanabilir adres/konum metnini panoya veriyoruz
-                        const textInfo = "📍 AREL OSGB Laboratuvar Adresi:\nBüyükdere Cad. No: 60 D: 8 Hanım Kadın İş Merkezi Mecidiyeköy/İSTANBUL\n📞 Tel: 0212 212 50 60 | GSM: 0532 560 21 23\n🗺️ Google Haritalar Konum: https://maps.app.goo.gl/ornekKonum";
-                        
-                        navigator.clipboard.write([
-                            new ClipboardItem({ 
-                                'image/png': blob,
-                                'text/plain': new Blob([textInfo], { type: 'text/plain' })
-                            })
-                        ]).then(() => {
-                            showToast();
-                        }).catch(err => {
-                            // Alternatif tarayıcı desteği
-                            navigator.clipboard.writeText(textInfo);
-                            downloadCanvasAsImage(canvas);
-                            showToast();
-                        });
-                    } catch (e) {
-                        downloadCanvasAsImage(canvas);
-                    }
-                    btn.style.display = 'flex';
-                });
-            });
+            btn.style.display = 'none';
+            let blob;
+            try {
+                const canvas = await html2canvas(card, { scale: 2, useCORS: true });
+                blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+            } catch (e) {
+                showToast('Resim oluşturulamadı, tekrar deneyin.');
+                return;
+            } finally {
+                btn.style.display = 'flex';
+            }
+
+            const file = new File([blob], 'AREL_OSGB_Teklif.png', { type: 'image/png' });
+
+            // 1) Paylaşım menüsü (mobil ve güncel masaüstü tarayıcılar, https gerekir)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({ files: [file], text: CONTACT_TEXT });
+                    return;
+                } catch (e) {
+                    if (e.name === 'AbortError') return; // kullanıcı vazgeçti
+                }
+            }
+
+            // 2) Yedek: resmi panoya kopyala
+            try {
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                showToast("Resim kopyalandı. WhatsApp'a yapıştırabilirsiniz.");
+            } catch (e) {
+                downloadBlob(blob);
+                showToast("Resim indirildi. WhatsApp'a ekleyebilirsiniz.");
+            }
         }
 
-        function showToast() {
+        function downloadBlob(blob) {
+            const link = document.createElement('a');
+            link.download = 'AREL_OSGB_Teklif_Ozeti.png';
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        }
+
+        function showToast(msg) {
             const toast = document.getElementById('toastMessage');
+            toast.querySelector('span').textContent = msg;
             toast.style.opacity = '1';
             toast.style.transform = 'translate(-50%, 0)';
-            
+
             setTimeout(() => {
                 toast.style.opacity = '0';
                 toast.style.transform = 'translate(-50%, -16px)';
             }, 2500);
-        }
-
-        function downloadCanvasAsImage(canvas) {
-            const link = document.createElement('a');
-            link.download = 'AREL_OSGB_Teklif_Ozeti.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
         }
 
         searchInput.addEventListener('input', (e) => {
