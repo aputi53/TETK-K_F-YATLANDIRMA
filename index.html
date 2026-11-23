@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        <!-- Ana Düzen: Sol (Tetkik Listesi) - Sağ (Fiyat & Özet Teklif Kartı) -->
+        <!-- Ana Düzen -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
             <!-- SOL TARAF: Tetkik Listesi ve Arama -->
@@ -89,7 +89,7 @@
             </div>
 
             <!-- SAĞ TARAF: Kurumsal Özet ve Fiyat Kartı -->
-            <div class="lg:col-span-5 lg:sticky lg:top-6">
+            <div class="lg:col-span-5">
 
                 <!-- Görüntü Alınacak Alan (summaryCard) -->
                 <div id="summaryCard" class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
@@ -129,14 +129,14 @@
                         </div>
                     </div>
 
-                    <!-- Seçilen Tetkikler Listesi -->
+                    <!-- Seçilen Tetkikler Listesi (scroll yok, aşağı doğru uzar) -->
                     <div class="p-5 space-y-3">
                         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Seçilen Hizmet / Tetkik Kalemleri</span>
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Durum</span>
                         </div>
 
-                        <div id="selectedList" class="max-h-[320px] overflow-y-auto space-y-2 pr-1 text-sm divide-y divide-slate-100">
+                        <div id="selectedList" class="space-y-2 text-sm divide-y divide-slate-100">
                             <div class="text-center py-8 text-slate-400 text-xs italic">
                                 Sol taraftaki listeden tetkik seçtiğinizde detaylar burada görüntülenecektir.
                             </div>
@@ -342,7 +342,17 @@ Büyükdere Cad. No: 60 D: 8 Hanım Kadın İş Merkezi, Mecidiyeköy / İSTANBU
             btn.style.display = 'none';
             let blob;
             try {
-                const canvas = await html2canvas(card, { scale: 2, useCORS: true });
+                const canvas = await html2canvas(card, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    scrollX: 0,
+                    scrollY: -window.scrollY,
+                    width: card.scrollWidth,
+                    height: card.scrollHeight,
+                    windowWidth: document.documentElement.scrollWidth,
+                    windowHeight: Math.max(document.documentElement.scrollHeight, card.scrollHeight)
+                });
                 blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
             } catch (e) {
                 showToast('Resim oluşturulamadı, tekrar deneyin.');
